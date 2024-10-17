@@ -40,3 +40,13 @@ lib_deps =
 `ln -s .pio/build/esp32-c3-devkitc-02/compile_commands.json compile_commands.json`
 ### ESP32 compiler 
 .platformio/packages/toolchain-riscv32-esp/bin/riscv32-esp-elf-g++
+
+
+## Web server
+
+### ESP side
+using **ESPAsyncWebServer-esphome** package
+
+### client side:
+- PREACT
+- gzip for memory save 
