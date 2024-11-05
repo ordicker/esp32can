@@ -10,7 +10,10 @@
 `pio run -t upload`
 
 ## Setup serial output
-??
+viewing the serial output @terminal
+```
+sudo minicom -b 115200 -o -D /dev/ttyUSB0
+```
 
 ## Debugging
 ??
@@ -50,3 +53,19 @@ using **ESPAsyncWebServer-esphome** package
 ### client side:
 - PREACT
 - gzip for memory save 
+
+## Writing state value to the eeprom (and not to the flash)
+
+## CANBUS (j1939)
+
+### CANBUS analyzer 
+
+#### installing drivers
+
+[SocketCAN Driver for Microhip CANBUS analyzer](https://github.com/rkollataj/mcba_usb)
+- didn't work on modern linux (giving up for now)
+
+
+## Algorithm (by Zvika)
+
+
