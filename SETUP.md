@@ -1,13 +1,18 @@
 # How to setup this project 
 
 ## project setup cmd
-`pio project init --ide emacs --board esp32-c3-devkitc-02`
+`pio project init --ide emacs --board esp32dev`
 
 ## Compile
 `pio run`
+### Compile dummy
+`pio run -e esp32-dummy`
 
 ## Upload
 `pio run -t upload`
+
+### Upload dummy
+`pio run -t upload -e esp32-dummy`
 
 ## Setup serial output
 viewing the serial output @terminal
