@@ -70,10 +70,16 @@ void setup() {
 }
 
 void loop() {
+  char text[100];
   if(wsClient != nullptr && wsClient->canSend()) {
-    // .. send hello message :-)
-    Serial.println("sending message");
-    wsClient->text("Hello client");
+    if (ESP32Can.readFrame(rxFrame, 1000)) {
+      wsClient->text("DATA: \n");
+      if (rxFrame.identifier == 0x75) {
+        double val = *(double*)rxFrame.data;
+        sprintf(text, "Received frame: %03X \r\n DATA: %f", rxFrame.identifier, val);
+      }      
+      wsClient->text(text);
+    }
   }
   // Wait 10 ms
   delay(10);

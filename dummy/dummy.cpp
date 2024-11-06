@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <math.h>
 #include <ESP32-TWAI-CAN.hpp>
 
 
@@ -6,7 +7,6 @@
 #define CAN_TX 5
 #define CAN_RX 4
 
-CanFrame rxFrame;
 
 void sendObdFrame(uint8_t obdId) {
     CanFrame obdFrame = { 0 };
@@ -23,6 +23,20 @@ void sendObdFrame(uint8_t obdId) {
     obdFrame.data[7] = 0xAA;
     // Accepts both pointers and references 
     ESP32Can.writeFrame(obdFrame);  // timeout defaults to 1 ms
+}
+
+void sendFloatFrame(double num, int id) {
+  uint8_t *array;
+  array = (uint8_t*)(&num);
+  CanFrame Frame = {0};
+  int N = sizeof(double);
+  for(int i = 0; i < N; i++) {
+    Frame.data[i] = array[i];
+  };
+  Frame.identifier = id;
+  Frame.extd = 0;
+  Frame.data_length_code = N;
+  ESP32Can.writeFrame(Frame);
 }
 
 void setup() {
@@ -47,13 +61,7 @@ void loop() {
   Serial.print("Sending packet ... ");
   sendObdFrame(5); 
   Serial.println("done");
-
-  delay(1000);
-
-  // send extended packet: id is 29 bits, packet can contain up to 8 bytes of data
-  Serial.print("Sending extended packet ... ");
-  sendObdFrame(10);
-  Serial.println("done");
-
-  delay(1000);
+  delay(100);
+  auto time_ms = millis();
+  sendFloatFrame(sin(0.0001*time_ms), 0x75);
 }
