@@ -3,36 +3,25 @@
 #include <ESP32-TWAI-CAN.hpp>
 
 #include <ESPAsyncWebServer.h>
-#include <WebSocketsServer.h>
 #include <WiFi.h>
-#include "index.h"
+
 
 // Replace with your network credentials
 const char* ssid = "";
 const char* password = "";
 
 AsyncWebServer server(80);
-WebSocketsServer webSocket = WebSocketsServer(81);  // WebSocket server on port 81
+AsyncWebSocket ws("/ws");
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
-  switch (type) {
-    case WStype_DISCONNECTED:
-      Serial.printf("[%u] Disconnected!\n", num);
-      break;
-    case WStype_CONNECTED:
-      {
-        IPAddress ip = webSocket.remoteIP(num);
-        Serial.printf("[%u] Connected from %d.%d.%d.%d\n", num, ip[0], ip[1], ip[2], ip[3]);
-      }
-      break;
-    case WStype_TEXT:
-      Serial.printf("[%u] Received text: %s\n", num, payload);
-      // Send a response back to the client
-      webSocket.sendTXT(num, "Received:  " + String((char*)payload));
-      break;
+AsyncWebSocketClient* wsClient;
+ 
+void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
+  if(type == WS_EVT_CONNECT){
+    wsClient = client;
+  } else if(type == WS_EVT_DISCONNECT){
+    wsClient = nullptr;
   }
 }
-
 
 // Default for ESP32
 #define CAN_TX 5
@@ -58,7 +47,6 @@ void setup() {
   } else {
     Serial.println("CAN bus failed!");
   }
-  Serial.println("Start sending messages!");
 
   /////////////////////////////////////////////////////////////////////////////
   //                                WIFI-SETUP                               //
@@ -69,28 +57,27 @@ void setup() {
     Serial.println("Connecting to WiFi...");
   }
   Serial.println("Connected to WiFi");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
   /////////////////////////////////////////////////////////////////////////////
   //                              WEBAPP-SETUP                               //
   /////////////////////////////////////////////////////////////////////////////
-  // Initialize WebSocket server
-  webSocket.begin();
-  webSocket.onEvent(webSocketEvent);
-
-  // Serve a basic HTML page with JavaScript to create the WebSocket connection
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    Serial.println("Web Server: received a web page request");
-    String html = HTML_CONTENT;  // Use the HTML content from the index.h file
-    request->send(200, "text/html", html);
-  });
-
+  // Start webserver
+  ws.onEvent(onWsEvent);
+  server.addHandler(&ws);
   server.begin();
-  Serial.print("ESP32 Web Server's IP address: ");
-  Serial.println(WiFi.localIP());
   
 }
 
 void loop() {
-  webSocket.loop(); // non blocking
+  if(wsClient != nullptr && wsClient->canSend()) {
+    // .. send hello message :-)
+    Serial.println("sending message");
+    wsClient->text("Hello client");
+  }
+  // Wait 10 ms
+  delay(10);
+
   
   if (ESP32Can.readFrame(rxFrame, 1000)) {
     // Comment out if too many requests
