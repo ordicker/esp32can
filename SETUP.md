@@ -43,9 +43,9 @@ lib_deps =
 ## Setting up LSP (clangd)
 
 ### generate "compile_commands.json" file
-`pio run -t compiledb`
+`pio run -t compiledb -e esp32-main`
 ### make a soft link to project root
-`ln -s .pio/build/esp32-c3-devkitc-02/compile_commands.json compile_commands.json`
+`ln -s .pio/build/esp32-main/compile_commands.json ./compile_commands.json`
 ### ESP32 compiler 
 .platformio/packages/toolchain-riscv32-esp/bin/riscv32-esp-elf-g++
 
